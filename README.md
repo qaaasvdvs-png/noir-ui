@@ -35,9 +35,6 @@ end)
 rawset(env, flag, previous)
 assert(ok, Library)
 ```
-
-`Slayers2_UI.lua` también puede resolver la biblioteca desde las rutas habituales. Se puede indicar una ruta específica antes de ejecutarlo:
-
 ```lua
 getgenv().NoirLibraryPath = "Scripts/New_Library_UI.obfuscated.lua"
 ```
