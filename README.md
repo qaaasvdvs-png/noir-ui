@@ -4,17 +4,27 @@ Librería de interfaz para Roblox, escrita en LuaU y pensada para interfaces de 
 
 ## Archivos
 
-- `New_Library_UI.lua`: fuente legible para desarrollo.
-- `New_Library_UI.obfuscated.lua`: salida ofuscada recomendada para distribuir o cargar desde el hub.
-- `Slayers2_UI.lua`: ejemplo de integración con el hub Slayers 2.
-
-Mantén la fuente original en un repositorio privado y regenera la salida ofuscada después de cada cambio. La ofuscación dificulta la lectura, pero no impide que el código se recupere o analice.
+- `loader.lua`: artefacto remoto ofuscado publicado en GitHub para la carga desde Scripts.
 
 ## Requisitos
 
-La biblioteca usa servicios estándar de Roblox, incluidos `Players`, `TweenService`, `UserInputService`, `GuiService` y `TextService`. Para cargar archivos externos desde un executor, hacen falta `readfile` y `loadstring`; para descargar desde una URL, el executor debe permitir `game:HttpGet` o `request`.
+La biblioteca usa servicios estándar de Roblox, incluidos `Players`, `TweenService`, `UserInputService`, `GuiService` y `TextService`. La carga remota requiere que el executor permita descargar contenido HTTPS mediante `game:HttpGet` o `request` y compilarlo mediante una función `loadstring` compatible. La carga desde un archivo local requiere además `readfile`.
 
 La gestión de configuraciones de Noir necesita las APIs de archivos del executor. Si no están disponibles, la ventana y los controles siguen funcionando, pero las configuraciones no se pueden guardar en disco.
+
+## Carga Desde Slayers 2
+
+`Slayers2_UI.lua` carga por defecto `loader.lua` desde el repositorio de Noir UI en GitHub. No es necesario tener los archivos de la biblioteca en el dispositivo para usar esta modalidad, pero sí se requiere conexión a GitHub y que el executor permita la descarga y compilación del código Lua.
+
+La ventana de Slayers 2 incluye la pestaña `Config`; sus controles editables se registran para guardar y restaurar sus valores mediante el gestor de Noir.
+
+Para usar otra ubicación, define `NoirLibraryUrl` antes de ejecutar el hub:
+
+```lua
+getgenv().NoirLibraryUrl = "https://raw.githubusercontent.com/usuario/repositorio/COMMIT/loader.lua"
+```
+
+Se recomienda apuntar a un commit o tag publicado en lugar de una rama mutable como `main`, para mantener una versión reproducible. `NoirLibraryPath` permite indicar una copia local si se prefiere no cargarla desde la red.
 
 ## Cargar Como Módulo
 
@@ -35,6 +45,9 @@ end)
 rawset(env, flag, previous)
 assert(ok, Library)
 ```
+
+`Slayers2_UI.lua` también puede resolver la biblioteca desde las rutas habituales. Se puede indicar una ruta específica antes de ejecutarlo:
+
 ```lua
 getgenv().NoirLibraryPath = "Scripts/New_Library_UI.obfuscated.lua"
 ```
@@ -85,6 +98,8 @@ Los componentes se crean en tabs, subtabs o groupboxes. Las opciones se pasan co
 - `CreateInput`, `CreatePasswordInput`, `CreateTextarea`, `CreateKeybind`
 - `CreateColorPicker`, `CreateLabel`, `CreateParagraph`, `CreateInfo`, `CreateSection`
 
+Los componentes con opción `Tooltip` muestran un icono de ayuda junto al título. En botones, labels, filas `Info` y encabezados `Section`, la ayuda aparece al pasar el cursor sin añadir un icono. Para solicitar explícitamente el icono en `CreateLabel`, `CreateInfo` o `CreateSection`, usa `TooltipIcon = true`.
+
 Ejemplo de opciones con persistencia por flag:
 
 ```lua
@@ -114,7 +129,7 @@ Los flags habilitan los métodos `Get`, `Set`, `Save`, `Load` y `Reset` disponib
 - `Window:Destroy()`, `Window:SelectTab(name)`
 - `Window:SaveConfig(name)`, `Window:LoadConfig(name)`, `Window:ResetConfig()`
 
-El gestor de configuraciones es opcional (`ConfigManager = true`) y depende del soporte de archivos del executor. Al cargar el módulo no se abre la ventana de ejemplo; al ejecutar `New_Library_UI.lua` directamente, sí se muestra.
+El gestor de configuraciones está activo por defecto y depende del soporte de archivos del executor. Su pestaña `Config` se añade al final; las pestañas creadas después permanecen antes de ella. Desactívalo con `ConfigManager = false` si la aplicación proporciona su propio gestor. Al cargar el módulo no se abre la ventana de ejemplo; al ejecutar `New_Library_UI.lua` directamente, sí se muestra.
 
 ## Licencia Y Créditos
 
